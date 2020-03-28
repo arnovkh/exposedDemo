@@ -13,7 +13,13 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>exposedDemo</name>
 	<description>Demo project for Spring Boot</description>
-
+	<repositories>
+		<repository>
+			<id>exposed</id>
+			<name>exposed</name>
+			<url>https://dl.bintray.com/kotlin/exposed</url>
+		</repository>
+	</repositories>
 	<properties>
 		<java.version>1.8</java.version>
 		<kotlin.version>1.3.71</kotlin.version>
@@ -36,7 +42,11 @@
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-stdlib-jdk8</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.jetbrains.exposed</groupId>
+			<artifactId>exposed</artifactId>
+			<version>0.17.7</version>
+		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
