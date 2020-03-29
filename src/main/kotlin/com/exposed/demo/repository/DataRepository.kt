@@ -5,8 +5,11 @@ import com.exposed.demo.models.Department
 import com.exposed.demo.models.Departments
 import com.exposed.demo.models.Departments.id
 import com.exposed.demo.models.Departments.name
+import com.exposed.demo.models.Employee
 import com.exposed.demo.models.Employees
+import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -38,11 +41,12 @@ class DataRepository @Autowired constructor(private val dataSource: DataSourceCo
             }
         }
     }
+    /*** region: Departments **/
 
     fun getDepartments(): List<Department> {
         return transaction {
              Departments.selectAll().map {
-                 Department(it[name], it[id].value)
+                 Department(it[id].value, it[name])
              }
         }
     }
@@ -52,17 +56,85 @@ class DataRepository @Autowired constructor(private val dataSource: DataSourceCo
         val id =    Departments.insertAndGetId {
                 it[name] = department.name
             }
+            commit()
         department.copy(id= id.value)
         }
     }
 
     fun getDepartmentById(idValue: Int): Department? {
         return transaction {
-            Departments.select { Departments.id.eq(idValue)}.map {
-                Department(it[name], it[id].value)
+            Departments.slice(Departments.id, Departments.name).select { Departments.id eq idValue}.map {
+                Department( it[id].value, it[name])
             }.firstOrNull()
         }
     }
 
+    /***endregion***/
+
+    /*** region: Employees **/
+
+    fun createEmployee(employee: Employee): Employee {
+        return transaction {
+            val id = Employees.insertAndGetId {
+                it[name] = employee.name
+                it[employeeRef] = employee.employeeRef
+                it[departmentId] =  employee.department.id
+                it[jobRole] = employee.jobRole
+            }
+            commit()
+            employee.copy(id = id.value)
+        }
+    }
+
+    // example with join
+    fun getEmployeesWithDepartments() : List<Employee> {
+        return transaction {
+            (Employees innerJoin Departments).selectAll().map {
+                Employee(id = it[Employees.id].value,
+                        employeeRef = it[Employees.employeeRef] ,
+                        jobRole = it[Employees.jobRole],
+                        department = Department(name = it[Departments.name], id=it[Departments.id].value),
+                        name = it[Employees.name]
+                )
+            }
+        }
+    }
+
+    fun getEmployeeById(idValue: Int): Employee? {
+        return transaction {
+            (Employees innerJoin Departments).select{Employees.id eq idValue}.map {
+                Employee(id = it[Employees.id].value,
+                        employeeRef = it[Employees.employeeRef] ,
+                        jobRole = it[Employees.jobRole],
+                        department = Department(name = it[Departments.name], id=it[Departments.id].value),
+                        name = it[Employees.name]
+                )
+            }.firstOrNull()
+        }
+    }
+
+    /**
+     * Equivalent to UPDATE EMPLOYEES  SET .... WHERE EMPLOYEE_ID = ?
+     */
+    fun updateEmployee(employee: Employee): Employee {
+        return transaction {
+            Employees.update({
+                Employees.id eq employee.id
+            }) {
+                it[name] = employee.name
+                it[jobRole] = employee.jobRole
+                it[departmentId] =  employee.department.id
+            }
+            employee
+        }
+    }
+
+    fun deleteEmployee(employeeId: Int) {
+        return transaction {
+            Employees.deleteWhere { Employees.id eq employeeId }
+        }
+    }
+
+    /***endregion***/
 
 }

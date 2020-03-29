@@ -6,9 +6,12 @@ import io.swagger.models.Response
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.net.URI
 
 
-@RestController("/department")
+@RestController()
+@RequestMapping("/department")
+@CrossOrigin(origins = ["*"])
 class DepartmentController @Autowired constructor(val departmentService: DepartmentService) {
     @GetMapping
     fun getAllDepartments(): ResponseEntity<List<Department>> {
@@ -26,6 +29,7 @@ class DepartmentController @Autowired constructor(val departmentService: Departm
 
     @PostMapping
     fun createDepartment(@RequestBody department: Department ): ResponseEntity<Department> {
-        return ResponseEntity.ok(departmentService.createDepartment(department = department ))
+        val created = departmentService.createDepartment(department = department )
+        return ResponseEntity.created(URI("/department/${created.id}")).body(created)
     }
 }

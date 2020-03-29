@@ -9,9 +9,9 @@ object Departments : IntIdTable() {
 }
 
 object Employees : IntIdTable() {
-    val employeeRef = integer("employee_ref").uniqueIndex()
-    val name = varchar("name", 50)
+    val employeeRef = varchar("employee_ref",50).uniqueIndex()
+    val name = varchar("name", 100)
     val jobRole = varchar("role", 50)
-    val department = reference("dept_id", Departments.id).uniqueIndex()
+    val departmentId = integer("department_id").uniqueIndex().references(Departments.id)
 }
 
