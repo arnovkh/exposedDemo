@@ -14,3 +14,5 @@ data class Employee(
         val jobRole: String,
     val department: Department
 )
+
+data class EmployeePerDepartment(  val department: Department, val countOfEmployees: Int)

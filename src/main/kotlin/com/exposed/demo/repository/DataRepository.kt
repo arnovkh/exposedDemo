@@ -1,15 +1,10 @@
 package com.exposed.demo.repository
 
 import com.exposed.demo.configuration.DataSourceConfiguration
-import com.exposed.demo.models.Department
-import com.exposed.demo.models.Departments
+import com.exposed.demo.models.*
 import com.exposed.demo.models.Departments.id
 import com.exposed.demo.models.Departments.name
-import com.exposed.demo.models.Employee
-import com.exposed.demo.models.Employees
-import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -21,7 +16,8 @@ class DataRepository @Autowired constructor(private val dataSource: DataSourceCo
                 dataSource.jdbc_url, driver = "org.h2.Driver",
                 user = dataSource.username)
         createDatabase()
-        initData()
+        initDepartments()
+        createEmployees()
     }
 
     private fun createDatabase() {
@@ -29,15 +25,54 @@ class DataRepository @Autowired constructor(private val dataSource: DataSourceCo
             SchemaUtils.create(Departments, Employees)
             commit()
         }
+
     }
 
-    private  fun initData() {
+    private  fun initDepartments() {
         transaction {
             if (Departments.selectAll().count() == 0) {
                 Departments.insert { it[name] = "Human Resources" }
                 Departments.insert { it[name] = "Information Technology" }
                 Departments.insert { it[name] = "Accounting" }
                 commit()
+            }
+        }
+
+    }
+
+    private fun createEmployees() {
+        transaction {
+            if (Employees.selectAll().count() == 0) {
+                createEmployee(Employee(
+                        name = "Delphine",
+                        employeeRef = "123456",
+                        jobRole = "HR Coordinator",
+                        department = Department(1, "")))
+                createEmployee(Employee(
+                        name = "Jean",
+                        employeeRef = "56546",
+                        jobRole = "HR Manager",
+                        department = Department(1, "")))
+                createEmployee(Employee(
+                        name = "Techie",
+                        employeeRef = "5757",
+                        jobRole = "System Engineer",
+                        department = Department(2, "")))
+                createEmployee(Employee(
+                        name = "Henry",
+                        employeeRef = "7986",
+                        jobRole = "Accountant",
+                        department = Department(3, "")))
+                createEmployee(Employee(
+                        name = "Kris",
+                        employeeRef = "798755",
+                        jobRole = "Accountant",
+                        department = Department(3, "")))
+                createEmployee(Employee(
+                        name = "Guillaume",
+                        employeeRef = "087668",
+                        jobRole = "Accounting Manager",
+                        department = Department(3, "")))
             }
         }
     }
@@ -135,6 +170,21 @@ class DataRepository @Autowired constructor(private val dataSource: DataSourceCo
         }
     }
 
+    /***endregion***/
+
+    /***region: Statistics***/
+
+
+    fun getEmployeesByDepartment() : List<EmployeePerDepartment> {
+         return transaction {
+            (Employees innerJoin Departments).
+            slice(Departments.id, name, Employees.id.count()).
+            selectAll().groupBy(Departments.id, Departments.name).map {
+                EmployeePerDepartment(Department(id= it[Departments.id].value, name = it[name]),
+                        countOfEmployees = it[Employees.id.count()])
+            }
+        }
+    }
     /***endregion***/
 
 }

@@ -1,6 +1,7 @@
 package com.exposed.demo.controller
 
 import com.exposed.demo.models.Department
+import com.exposed.demo.models.EmployeePerDepartment
 import com.exposed.demo.service.DepartmentService
 import io.swagger.models.Response
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,5 +32,10 @@ class DepartmentController @Autowired constructor(val departmentService: Departm
     fun createDepartment(@RequestBody department: Department ): ResponseEntity<Department> {
         val created = departmentService.createDepartment(department = department )
         return ResponseEntity.created(URI("/department/${created.id}")).body(created)
+    }
+
+    @GetMapping("/stats")
+    fun getStats() : List<EmployeePerDepartment> {
+        return departmentService.getStatsPerDepartment()
     }
 }
