@@ -9,7 +9,7 @@ object Departments : IntIdTable() {
 }
 
 object Employees : IntIdTable() {
-    val employerRef = integer("employee_ref").uniqueIndex()
+    val employeeRef = integer("employee_ref").uniqueIndex()
     val name = varchar("name", 50)
     val jobRole = varchar("role", 50)
     val department = reference("dept_id", Departments.id).uniqueIndex()

@@ -4,15 +4,14 @@ import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.EntityID
 
-class Department(id: EntityID<Int>) : Entity<Int>(id) {
-    companion object : EntityClass<Int, Department>(Departments)
-    var name     by Departments.name
-}
+data class Department(val name: String, val id:Int = 0)
 
-class Employee(id: EntityID<Int>) : Entity<Int>(id) {
-    companion object : EntityClass<Int, Employee>(Employees)
-    var employerRef by Employees.employerRef
-    var name     by Employees.name
-    var jobRole by Employees.jobRole
-    var department by Employees.department
-}
+
+data class Employee(
+        val id: Int =0,
+        val employeeId: Int,
+    val employeeRef: String,
+        val name: String,
+        val jobRole: String,
+    val department: Department
+)
